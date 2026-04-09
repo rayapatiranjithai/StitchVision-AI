@@ -1,0 +1,31 @@
+# Python
+backend/venv/
+__pycache__/
+*.pyc
+*.pyo
+.env
+backend/profiles/
+
+# MediaPipe model (29MB - auto-downloaded on first run)
+backend/app/services/pose_landmarker_heavy.task
+
+# Node
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Claude
+.claude/
+
+# Temp files
+Untitled-*
+*.md.md
+/tmp/
