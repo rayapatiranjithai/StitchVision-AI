@@ -9,7 +9,8 @@ import MeasurementDisplay from "./components/MeasurementDisplay";
 import SkeletonOverlay from "./components/SkeletonOverlay";
 import RealtimeMeasurements from "./components/RealtimeMeasurements";
 import StyleSelector from "./components/StyleSelector";
-import GarmentPreview3D from "./components/GarmentPreview3D";
+import dynamic from "next/dynamic";
+const GarmentPreview3D = dynamic(() => import("./components/GarmentPreview3D"), { ssr: false });
 import HeroSection from "./components/HeroSection";
 import VirtualTryOn from "./components/VirtualTryOn";
 import {
