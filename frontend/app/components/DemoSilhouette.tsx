@@ -10,98 +10,86 @@ export default function DemoSilhouette({ gender, className }: DemoSilhouetteProp
 
   return (
     <svg
-      viewBox="0 0 400 700"
+      viewBox="0 0 400 500"
       className={className || "w-full h-full"}
       preserveAspectRatio="xMidYMid meet"
     >
       <defs>
         <linearGradient id="silGrad" x1="50%" y1="0%" x2="50%" y2="100%">
-          <stop offset="0%" stopColor="#374151" />
+          <stop offset="0%" stopColor="#4b5563" />
           <stop offset="100%" stopColor="#1f2937" />
         </linearGradient>
-        <radialGradient id="silHead" cx="50%" cy="40%" r="50%">
-          <stop offset="0%" stopColor="#4b5563" />
-          <stop offset="100%" stopColor="#374151" />
+        <radialGradient id="silBg" cx="50%" cy="40%" r="60%">
+          <stop offset="0%" stopColor="#1e293b" />
+          <stop offset="100%" stopColor="#0f172a" />
         </radialGradient>
       </defs>
 
-      {/* Background */}
-      <rect width="400" height="700" fill="#111827" />
+      <rect width="400" height="500" fill="url(#silBg)" />
 
       {/* Head */}
-      <ellipse cx="200" cy="58" rx="28" ry="34" fill="url(#silHead)" />
+      <ellipse cx="200" cy="42" rx="22" ry="28" fill="#4b5563" />
 
       {/* Neck */}
-      <rect x="190" y="90" width="20" height="22" fill="#374151" rx="4" />
+      <rect x="192" y="68" width="16" height="18" fill="#4b5563" rx="3" />
 
       {/* Torso */}
       {isFemale ? (
         <path
-          d={`M 152 112
-            C 145 112, 138 130, 136 155
-            C 134 175, 142 190, 148 200
-            C 140 215, 135 230, 136 255
-            C 137 280, 140 320, 145 370
-            L 255 370
-            C 260 320, 263 280, 264 255
-            C 265 230, 260 215, 252 200
-            C 258 190, 266 175, 264 155
-            C 262 130, 255 112, 248 112
-            Z`}
+          d={`M 155 86 C 148 86, 140 102, 138 125 C 136 145, 144 158, 150 168
+              C 143 180, 138 195, 139 218 C 140 240, 143 268, 147 300
+              L 253 300
+              C 257 268, 260 240, 261 218 C 262 195, 257 180, 250 168
+              C 256 158, 264 145, 262 125 C 260 102, 252 86, 245 86 Z`}
           fill="url(#silGrad)"
         />
       ) : (
         <path
-          d={`M 148 112
-            C 140 112, 132 130, 130 160
-            C 128 185, 132 210, 135 240
-            C 137 270, 138 310, 140 370
-            L 260 370
-            C 262 310, 263 270, 265 240
-            C 268 210, 272 185, 270 160
-            C 268 130, 260 112, 252 112
-            Z`}
+          d={`M 150 86 C 142 86, 135 105, 133 130 C 131 155, 135 180, 138 208
+              C 140 235, 141 268, 143 300
+              L 257 300
+              C 259 268, 260 235, 262 208 C 265 180, 269 155, 267 130
+              C 265 105, 258 86, 250 86 Z`}
           fill="url(#silGrad)"
         />
       )}
 
       {/* Left arm */}
       <path
-        d={`M 148 118
-          C 130 125, 110 180, 100 250
-          C 92 300, 90 350, 95 385`}
-        fill="none" stroke="#374151" strokeWidth="22" strokeLinecap="round"
+        d="M 150 90 C 133 97, 115 150, 107 210 C 100 255, 98 295, 102 325"
+        fill="none" stroke="#4b5563" strokeWidth="18" strokeLinecap="round"
       />
 
       {/* Right arm */}
       <path
-        d={`M 252 118
-          C 270 125, 290 180, 300 250
-          C 308 300, 310 350, 305 385`}
-        fill="none" stroke="#374151" strokeWidth="22" strokeLinecap="round"
+        d="M 250 90 C 267 97, 285 150, 293 210 C 300 255, 302 295, 298 325"
+        fill="none" stroke="#4b5563" strokeWidth="18" strokeLinecap="round"
       />
 
       {/* Left leg */}
       <path
-        d={`M 170 370
-          C 168 420, 165 480, 163 540
-          C 162 580, 160 620, 158 655`}
-        fill="none" stroke="#374151" strokeWidth="28" strokeLinecap="round"
+        d="M 172 300 C 170 340, 167 380, 165 420 C 164 445, 162 465, 160 485"
+        fill="none" stroke="#4b5563" strokeWidth="24" strokeLinecap="round"
       />
 
       {/* Right leg */}
       <path
-        d={`M 230 370
-          C 232 420, 235 480, 237 540
-          C 238 580, 240 620, 242 655`}
-        fill="none" stroke="#374151" strokeWidth="28" strokeLinecap="round"
+        d="M 228 300 C 230 340, 233 380, 235 420 C 236 445, 238 465, 240 485"
+        fill="none" stroke="#4b5563" strokeWidth="24" strokeLinecap="round"
       />
 
-      {/* Subtle grid lines for reference */}
-      <line x1="0" y1="155" x2="400" y2="155" stroke="#ffffff" strokeWidth="0.3" opacity="0.08" strokeDasharray="8,8" />
-      <line x1="0" y1="260" x2="400" y2="260" stroke="#ffffff" strokeWidth="0.3" opacity="0.08" strokeDasharray="8,8" />
-      <line x1="0" y1="370" x2="400" y2="370" stroke="#ffffff" strokeWidth="0.3" opacity="0.08" strokeDasharray="8,8" />
-      <line x1="200" y1="0" x2="200" y2="700" stroke="#ffffff" strokeWidth="0.3" opacity="0.05" strokeDasharray="8,8" />
+      {/* Subtle measurement guide lines */}
+      <g opacity="0.06" stroke="#fff" strokeWidth="0.5" strokeDasharray="6,6">
+        <line x1="0" y1="110" x2="400" y2="110" />
+        <line x1="0" y1="200" x2="400" y2="200" />
+        <line x1="0" y1="265" x2="400" y2="265" />
+        <line x1="200" y1="0" x2="200" y2="500" />
+      </g>
+
+      {/* "Stand here" text */}
+      <text x="200" y="490" textAnchor="middle" fill="#374151" fontSize="10" fontFamily="system-ui">
+        Demo Silhouette
+      </text>
     </svg>
   );
 }

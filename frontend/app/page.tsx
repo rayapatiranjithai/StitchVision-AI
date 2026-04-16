@@ -9,7 +9,11 @@ import MeasurementDisplay from "./components/MeasurementDisplay";
 import SkeletonOverlay from "./components/SkeletonOverlay";
 import RealtimeMeasurements from "./components/RealtimeMeasurements";
 import StyleSelector from "./components/StyleSelector";
-import GarmentPreview3D from "./components/GarmentPreview3D";
+import dynamic from "next/dynamic";
+const GarmentPreview3D = dynamic(() => import("./components/GarmentPreview3D"), {
+  ssr: false,
+  loading: () => <div className="bg-gray-800 rounded-2xl h-[320px] flex items-center justify-center"><p className="text-gray-500 text-sm">Loading 3D view...</p></div>,
+});
 import HeroSection from "./components/HeroSection";
 import VirtualTryOn from "./components/VirtualTryOn";
 import {
