@@ -12,7 +12,7 @@ logging.basicConfig(
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .routers import measurement
+from .routers import measurement, demo
 
 app = FastAPI(
     title="Body Measurement API",
@@ -34,6 +34,7 @@ app.add_middleware(
 )
 
 app.include_router(measurement.router)
+app.include_router(demo.router)
 
 
 @app.get("/health")

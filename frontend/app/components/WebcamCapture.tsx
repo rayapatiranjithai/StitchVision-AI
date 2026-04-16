@@ -2,6 +2,7 @@
 
 import { useRef, useState, useCallback, useEffect } from "react";
 import { measureFrame } from "../lib/api";
+import { useToast } from "./Toast";
 import type { FrameResponse, LandmarkPoint } from "../lib/types";
 
 interface WebcamCaptureProps {
@@ -34,6 +35,7 @@ export default function WebcamCapture({
 }: WebcamCaptureProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { showToast } = useToast();
   const [streaming, setStreaming] = useState(false);
   const [landmarks, setLandmarks] = useState<Record<string, LandmarkPoint> | null>(null);
   const [realtimeActive, setRealtimeActive] = useState(false);
@@ -50,7 +52,7 @@ export default function WebcamCapture({
         setStreaming(true);
       }
     } catch {
-      alert("Could not access camera. Please check permissions.");
+      showToast("Could not access camera. Please check permissions.", "error");
     }
   }, []);
 

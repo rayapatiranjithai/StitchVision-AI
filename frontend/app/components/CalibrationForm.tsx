@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useToast } from "./Toast";
 
 interface CalibrationFormProps {
   onCalibrate: (heightCm: number, gender: string) => void;
 }
 
 export default function CalibrationForm({ onCalibrate }: CalibrationFormProps) {
+  const { showToast } = useToast();
   const [height, setHeight] = useState("");
   const [unit, setUnit] = useState<"cm" | "ft">("cm");
   const [feet, setFeet] = useState("");
@@ -22,7 +24,7 @@ export default function CalibrationForm({ onCalibrate }: CalibrationFormProps) {
       heightCm = (parseFloat(feet) * 12 + parseFloat(inches || "0")) * 2.54;
     }
     if (isNaN(heightCm) || heightCm < 100 || heightCm > 250) {
-      alert("Please enter a valid height (100-250 cm)");
+      showToast("Please enter a valid height (100-250 cm)", "warning");
       return;
     }
     onCalibrate(heightCm, gender);

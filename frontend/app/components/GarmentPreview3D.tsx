@@ -9,9 +9,8 @@ interface GarmentPreview3DProps {
   gender: string;
 }
 
-// Normalize measurements to SVG viewport (600x800)
 function normalize(m: BodyMeasurements) {
-  const base = 600;
+  const base = 540;
   const scale = base / (m.shoulder_width_cm * 2.8);
   return {
     shoulder: m.shoulder_width_cm * scale,
@@ -23,479 +22,583 @@ function normalize(m: BodyMeasurements) {
   };
 }
 
-function MaleShirt({
-  n,
-  style,
-}: {
-  m: BodyMeasurements;
-  n: ReturnType<typeof normalize>;
-  style: StyleInfo | null;
-}) {
+/* ------------------------------------------------------------------ */
+/*  MALE SHIRT                                                         */
+/* ------------------------------------------------------------------ */
+function MaleShirt({ n, style }: { n: ReturnType<typeof normalize>; style: StyleInfo | null }) {
   const cx = 300;
-  const topY = 100;
+  const topY = 90;
   const neckType = style?.neck_type || "collar";
   const sleeveType = style?.sleeve_type || "full";
-  const sleeveFactor = sleeveType === "half" ? 0.4 : sleeveType === "3-quarter" ? 0.72 : 1;
-  const sleeveLen = n.sleeve * sleeveFactor;
+  const sf = sleeveType === "half" ? 0.4 : sleeveType === "3-quarter" ? 0.72 : 1;
+  const sleeveLen = n.sleeve * sf;
 
-  const shoulderY = topY + 25;
-  const chestY = shoulderY + n.length * 0.28;
-  const waistY = shoulderY + n.length * 0.62;
-  const hemY = shoulderY + n.length;
+  const shY = topY + 28;
+  const chY = shY + n.length * 0.28;
+  const waY = shY + n.length * 0.62;
+  const hmY = shY + n.length;
+  const chW = n.chest * 1.05;
+  const waW = n.waist * 0.97;
+  const hmW = n.waist * 0.99;
 
-  // Body slightly wider than shoulder at chest
-  const bodyWidthChest = n.chest * 1.05;
-  const bodyWidthWaist = n.waist * 0.97;
-  const hemWidth = n.waist * 0.99;
+  const isKurta = neckType === "mandarin" && (style?.length_factor || 1) > 1.2;
 
-  // Fabric color
-  const fabricMain = style?.neck_type === "mandarin" ? "#e8d5b7" : "#d4e6f1";
-  const fabricDark = style?.neck_type === "mandarin" ? "#c4a97d" : "#a9cce3";
-  const fabricLight = style?.neck_type === "mandarin" ? "#f5ecd7" : "#eaf2f8";
+  // Fabric colors per style
+  const fabric = isKurta
+    ? { main: "#f5ead6", mid: "#e8d5b7", dark: "#c4a97d", light: "#faf3e8", accent: "#b8965a" }
+    : neckType === "mandarin"
+    ? { main: "#e8ddd0", mid: "#d4c4b0", dark: "#a89070", light: "#f5efe8", accent: "#8a7050" }
+    : { main: "#cfe2f3", mid: "#b4cfe6", dark: "#7da7cc", light: "#e8f0f8", accent: "#5b8db8" };
 
-  // Sleeve angle
-  const sleeveAngle = 0.35;
-  const sleeveEndX = n.shoulder + sleeveLen * Math.cos(sleeveAngle);
-  const sleeveEndY = shoulderY + sleeveLen * Math.sin(sleeveAngle);
-  const sleeveWidth = n.chest * 0.28;
+  const slvA = 0.35;
+  const slvEX = n.shoulder + sleeveLen * Math.cos(slvA);
+  const slvEY = shY + sleeveLen * Math.sin(slvA);
+  const slvW = n.chest * 0.3;
 
   return (
     <g>
-      {/* Definitions */}
       <defs>
-        <linearGradient id="fabricGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor={fabricLight} />
-          <stop offset="50%" stopColor={fabricMain} />
-          <stop offset="100%" stopColor={fabricDark} />
+        {/* Main fabric gradient */}
+        <linearGradient id="mfg" x1="35%" y1="0%" x2="65%" y2="100%">
+          <stop offset="0%" stopColor={fabric.light} />
+          <stop offset="30%" stopColor={fabric.main} />
+          <stop offset="70%" stopColor={fabric.mid} />
+          <stop offset="100%" stopColor={fabric.dark} />
         </linearGradient>
-        <linearGradient id="sleeveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor={fabricMain} />
-          <stop offset="100%" stopColor={fabricDark} />
+        {/* Sleeve gradient */}
+        <linearGradient id="msg" x1="0%" y1="0%" x2="100%" y2="60%">
+          <stop offset="0%" stopColor={fabric.main} />
+          <stop offset="60%" stopColor={fabric.mid} />
+          <stop offset="100%" stopColor={fabric.dark} />
         </linearGradient>
-        <filter id="shadow">
-          <feDropShadow dx="2" dy="3" stdDeviation="4" floodOpacity="0.15" />
-        </filter>
-        <pattern id="fabric-texture" patternUnits="userSpaceOnUse" width="4" height="4">
-          <rect width="4" height="4" fill={fabricMain} />
-          <line x1="0" y1="0" x2="4" y2="4" stroke={fabricDark} strokeWidth="0.3" opacity="0.15" />
-          <line x1="4" y1="0" x2="0" y2="4" stroke={fabricLight} strokeWidth="0.3" opacity="0.1" />
+        {/* Collar gradient */}
+        <linearGradient id="mcg" x1="50%" y1="0%" x2="50%" y2="100%">
+          <stop offset="0%" stopColor="#ffffff" />
+          <stop offset="40%" stopColor="#f8f9fa" />
+          <stop offset="100%" stopColor="#e9ecef" />
+        </linearGradient>
+        {/* Fabric weave texture */}
+        <pattern id="mweave" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">
+          <rect width="6" height="6" fill="transparent" />
+          <line x1="0" y1="3" x2="6" y2="3" stroke={fabric.dark} strokeWidth="0.2" opacity="0.08" />
+          <line x1="3" y1="0" x2="3" y2="6" stroke={fabric.dark} strokeWidth="0.15" opacity="0.05" />
         </pattern>
+        {/* Shadow filter */}
+        <filter id="msh">
+          <feGaussianBlur in="SourceAlpha" stdDeviation="5" />
+          <feOffset dx="3" dy="5" />
+          <feComponentTransfer><feFuncA type="linear" slope="0.18" /></feComponentTransfer>
+          <feMerge><feMergeNode /><feMergeNode in="SourceGraphic" /></feMerge>
+        </filter>
+        {/* Inner shadow for depth */}
+        <filter id="mdepth">
+          <feGaussianBlur in="SourceAlpha" stdDeviation="3" />
+          <feOffset dx="0" dy="2" />
+          <feComponentTransfer><feFuncA type="linear" slope="0.1" /></feComponentTransfer>
+          <feMerge><feMergeNode /><feMergeNode in="SourceGraphic" /></feMerge>
+        </filter>
       </defs>
 
-      {/* Left Sleeve */}
-      <path
-        d={`M ${cx - n.shoulder} ${shoulderY}
-            L ${cx - sleeveEndX} ${sleeveEndY - sleeveWidth * 0.3}
-            Q ${cx - sleeveEndX - 3} ${sleeveEndY + sleeveWidth * 0.5} ${cx - sleeveEndX + sleeveWidth * 0.5} ${sleeveEndY + sleeveWidth * 0.8}
-            L ${cx - n.shoulder + 5} ${shoulderY + n.length * 0.2}
-            Z`}
-        fill="url(#sleeveGrad)"
-        stroke={fabricDark}
-        strokeWidth="1"
-        filter="url(#shadow)"
-      />
-      {/* Sleeve fold line */}
-      <line
-        x1={cx - n.shoulder - sleeveLen * 0.2} y1={shoulderY + sleeveLen * 0.08}
-        x2={cx - sleeveEndX + sleeveWidth * 0.3} y2={sleeveEndY + sleeveWidth * 0.4}
-        stroke={fabricDark} strokeWidth="0.5" opacity="0.3"
-      />
+      {/* === LEFT SLEEVE === */}
+      <path d={`M ${cx - n.shoulder} ${shY}
+        C ${cx - n.shoulder - sleeveLen * 0.3} ${shY + sleeveLen * 0.05},
+          ${cx - slvEX + 5} ${slvEY - slvW * 0.5},
+          ${cx - slvEX} ${slvEY - slvW * 0.15}
+        Q ${cx - slvEX - 4} ${slvEY + slvW * 0.4},
+          ${cx - slvEX + slvW * 0.5} ${slvEY + slvW * 0.75}
+        C ${cx - slvEX + slvW * 0.7} ${slvEY + slvW * 0.3},
+          ${cx - n.shoulder + 8} ${shY + n.length * 0.18},
+          ${cx - n.shoulder + 4} ${shY + n.length * 0.15}
+        Z`}
+        fill="url(#msg)" stroke={fabric.dark} strokeWidth="0.8" filter="url(#msh)" />
+      {/* Sleeve fold lines */}
+      <path d={`M ${cx - n.shoulder - sleeveLen * 0.15} ${shY + sleeveLen * 0.06}
+        Q ${cx - n.shoulder - sleeveLen * 0.4} ${shY + sleeveLen * 0.2},
+          ${cx - slvEX + slvW * 0.3} ${slvEY + slvW * 0.3}`}
+        fill="none" stroke={fabric.dark} strokeWidth="0.6" opacity="0.15" />
+      <path d={`M ${cx - n.shoulder - sleeveLen * 0.1} ${shY + sleeveLen * 0.12}
+        Q ${cx - n.shoulder - sleeveLen * 0.35} ${shY + sleeveLen * 0.25},
+          ${cx - slvEX + slvW * 0.1} ${slvEY + slvW * 0.5}`}
+        fill="none" stroke={fabric.dark} strokeWidth="0.4" opacity="0.1" />
+      {/* Cuff */}
+      {sleeveType === "full" && (
+        <path d={`M ${cx - slvEX - 1} ${slvEY - slvW * 0.2}
+          Q ${cx - slvEX - 5} ${slvEY + slvW * 0.35},
+            ${cx - slvEX + slvW * 0.45} ${slvEY + slvW * 0.7}
+          Q ${cx - slvEX + slvW * 0.5} ${slvEY + slvW * 0.6},
+            ${cx - slvEX + slvW * 0.4} ${slvEY + slvW * 0.55}
+          Q ${cx - slvEX - 2} ${slvEY + slvW * 0.2},
+            ${cx - slvEX + 2} ${slvEY - slvW * 0.1} Z`}
+          fill={fabric.light} stroke={fabric.dark} strokeWidth="0.5" opacity="0.6" />
+      )}
 
-      {/* Right Sleeve */}
-      <path
-        d={`M ${cx + n.shoulder} ${shoulderY}
-            L ${cx + sleeveEndX} ${sleeveEndY - sleeveWidth * 0.3}
-            Q ${cx + sleeveEndX + 3} ${sleeveEndY + sleeveWidth * 0.5} ${cx + sleeveEndX - sleeveWidth * 0.5} ${sleeveEndY + sleeveWidth * 0.8}
-            L ${cx + n.shoulder - 5} ${shoulderY + n.length * 0.2}
-            Z`}
-        fill="url(#sleeveGrad)"
-        stroke={fabricDark}
-        strokeWidth="1"
-        filter="url(#shadow)"
-      />
-      <line
-        x1={cx + n.shoulder + sleeveLen * 0.2} y1={shoulderY + sleeveLen * 0.08}
-        x2={cx + sleeveEndX - sleeveWidth * 0.3} y2={sleeveEndY + sleeveWidth * 0.4}
-        stroke={fabricDark} strokeWidth="0.5" opacity="0.3"
-      />
+      {/* === RIGHT SLEEVE === */}
+      <path d={`M ${cx + n.shoulder} ${shY}
+        C ${cx + n.shoulder + sleeveLen * 0.3} ${shY + sleeveLen * 0.05},
+          ${cx + slvEX - 5} ${slvEY - slvW * 0.5},
+          ${cx + slvEX} ${slvEY - slvW * 0.15}
+        Q ${cx + slvEX + 4} ${slvEY + slvW * 0.4},
+          ${cx + slvEX - slvW * 0.5} ${slvEY + slvW * 0.75}
+        C ${cx + slvEX - slvW * 0.7} ${slvEY + slvW * 0.3},
+          ${cx + n.shoulder - 8} ${shY + n.length * 0.18},
+          ${cx + n.shoulder - 4} ${shY + n.length * 0.15}
+        Z`}
+        fill="url(#msg)" stroke={fabric.dark} strokeWidth="0.8" filter="url(#msh)" />
+      <path d={`M ${cx + n.shoulder + sleeveLen * 0.15} ${shY + sleeveLen * 0.06}
+        Q ${cx + n.shoulder + sleeveLen * 0.4} ${shY + sleeveLen * 0.2},
+          ${cx + slvEX - slvW * 0.3} ${slvEY + slvW * 0.3}`}
+        fill="none" stroke={fabric.dark} strokeWidth="0.6" opacity="0.15" />
+      {sleeveType === "full" && (
+        <path d={`M ${cx + slvEX + 1} ${slvEY - slvW * 0.2}
+          Q ${cx + slvEX + 5} ${slvEY + slvW * 0.35},
+            ${cx + slvEX - slvW * 0.45} ${slvEY + slvW * 0.7}
+          Q ${cx + slvEX - slvW * 0.5} ${slvEY + slvW * 0.6},
+            ${cx + slvEX - slvW * 0.4} ${slvEY + slvW * 0.55}
+          Q ${cx + slvEX + 2} ${slvEY + slvW * 0.2},
+            ${cx + slvEX - 2} ${slvEY - slvW * 0.1} Z`}
+          fill={fabric.light} stroke={fabric.dark} strokeWidth="0.5" opacity="0.6" />
+      )}
 
-      {/* Main Body */}
-      <path
-        d={`M ${cx - n.neck * 0.8} ${topY + 15}
-            Q ${cx - n.shoulder * 0.5} ${topY + 5} ${cx - n.shoulder} ${shoulderY}
-            L ${cx - n.shoulder + 3} ${shoulderY + n.length * 0.15}
-            Q ${cx - bodyWidthChest - 2} ${chestY - 10} ${cx - bodyWidthChest} ${chestY}
-            Q ${cx - bodyWidthWaist + 3} ${(chestY + waistY) / 2} ${cx - bodyWidthWaist} ${waistY}
-            Q ${cx - hemWidth} ${(waistY + hemY) / 2} ${cx - hemWidth} ${hemY}
-            Q ${cx} ${hemY + 4} ${cx + hemWidth} ${hemY}
-            Q ${cx + hemWidth} ${(waistY + hemY) / 2} ${cx + bodyWidthWaist} ${waistY}
-            Q ${cx + bodyWidthWaist - 3} ${(chestY + waistY) / 2} ${cx + bodyWidthChest} ${chestY}
-            Q ${cx + bodyWidthChest + 2} ${chestY - 10} ${cx + n.shoulder - 3} ${shoulderY + n.length * 0.15}
-            L ${cx + n.shoulder} ${shoulderY}
-            Q ${cx + n.shoulder * 0.5} ${topY + 5} ${cx + n.neck * 0.8} ${topY + 15}
-            Z`}
-        fill="url(#fabric-texture)"
-        stroke={fabricDark}
-        strokeWidth="1.2"
-        filter="url(#shadow)"
-      />
+      {/* === MAIN BODY === */}
+      <path d={`M ${cx - n.neck * 0.8} ${topY + 18}
+        C ${cx - n.shoulder * 0.6} ${topY + 6}, ${cx - n.shoulder + 5} ${shY - 3}, ${cx - n.shoulder} ${shY}
+        L ${cx - n.shoulder + 3} ${shY + n.length * 0.12}
+        C ${cx - chW - 3} ${chY - 15}, ${cx - chW - 1} ${chY - 5}, ${cx - chW} ${chY}
+        C ${cx - chW + 5} ${chY + 15}, ${cx - waW - 3} ${waY - 15}, ${cx - waW} ${waY}
+        C ${cx - waW + 2} ${waY + 15}, ${cx - hmW - 2} ${hmY - 20}, ${cx - hmW} ${hmY}
+        Q ${cx} ${hmY + 5} ${cx + hmW} ${hmY}
+        C ${cx + hmW + 2} ${hmY - 20}, ${cx + waW - 2} ${waY + 15}, ${cx + waW} ${waY}
+        C ${cx + waW + 3} ${waY - 15}, ${cx + chW - 5} ${chY + 15}, ${cx + chW} ${chY}
+        C ${cx + chW + 1} ${chY - 5}, ${cx + chW + 3} ${chY - 15}, ${cx + n.shoulder - 3} ${shY + n.length * 0.12}
+        L ${cx + n.shoulder} ${shY}
+        C ${cx + n.shoulder - 5} ${shY - 3}, ${cx + n.shoulder * 0.6} ${topY + 6}, ${cx + n.neck * 0.8} ${topY + 18}
+        Z`}
+        fill="url(#mfg)" stroke={fabric.dark} strokeWidth="1" filter="url(#msh)" />
+      {/* Fabric texture overlay */}
+      <path d={`M ${cx - n.neck * 0.8} ${topY + 18}
+        C ${cx - n.shoulder * 0.6} ${topY + 6}, ${cx - n.shoulder + 5} ${shY - 3}, ${cx - n.shoulder} ${shY}
+        L ${cx - n.shoulder + 3} ${shY + n.length * 0.12}
+        C ${cx - chW - 3} ${chY - 15}, ${cx - chW - 1} ${chY - 5}, ${cx - chW} ${chY}
+        C ${cx - chW + 5} ${chY + 15}, ${cx - waW - 3} ${waY - 15}, ${cx - waW} ${waY}
+        C ${cx - waW + 2} ${waY + 15}, ${cx - hmW - 2} ${hmY - 20}, ${cx - hmW} ${hmY}
+        Q ${cx} ${hmY + 5} ${cx + hmW} ${hmY}
+        C ${cx + hmW + 2} ${hmY - 20}, ${cx + waW - 2} ${waY + 15}, ${cx + waW} ${waY}
+        C ${cx + waW + 3} ${waY - 15}, ${cx + chW - 5} ${chY + 15}, ${cx + chW} ${chY}
+        C ${cx + chW + 1} ${chY - 5}, ${cx + chW + 3} ${chY - 15}, ${cx + n.shoulder - 3} ${shY + n.length * 0.12}
+        L ${cx + n.shoulder} ${shY}
+        C ${cx + n.shoulder - 5} ${shY - 3}, ${cx + n.shoulder * 0.6} ${topY + 6}, ${cx + n.neck * 0.8} ${topY + 18}
+        Z`}
+        fill="url(#mweave)" />
 
-      {/* Side seam lines */}
-      <path
-        d={`M ${cx - n.shoulder + 3} ${shoulderY + 10} Q ${cx - bodyWidthChest} ${chestY} ${cx - bodyWidthWaist} ${waistY}`}
-        fill="none" stroke={fabricDark} strokeWidth="0.5" opacity="0.2" strokeDasharray="3,3"
-      />
-      <path
-        d={`M ${cx + n.shoulder - 3} ${shoulderY + 10} Q ${cx + bodyWidthChest} ${chestY} ${cx + bodyWidthWaist} ${waistY}`}
-        fill="none" stroke={fabricDark} strokeWidth="0.5" opacity="0.2" strokeDasharray="3,3"
-      />
+      {/* Body fold/wrinkle lines */}
+      <path d={`M ${cx - 8} ${chY + 10} Q ${cx - 12} ${(chY + waY) / 2} ${cx - 6} ${waY - 5}`}
+        fill="none" stroke={fabric.dark} strokeWidth="0.5" opacity="0.1" />
+      <path d={`M ${cx + 10} ${chY + 15} Q ${cx + 15} ${(chY + waY) / 2} ${cx + 8} ${waY}`}
+        fill="none" stroke={fabric.dark} strokeWidth="0.4" opacity="0.08" />
+      <path d={`M ${cx - chW + 15} ${chY + 5} Q ${cx - waW + 10} ${(chY + waY) / 2} ${cx - waW + 8} ${waY - 10}`}
+        fill="none" stroke={fabric.dark} strokeWidth="0.5" opacity="0.1" />
+      <path d={`M ${cx + chW - 15} ${chY + 5} Q ${cx + waW - 10} ${(chY + waY) / 2} ${cx + waW - 8} ${waY - 10}`}
+        fill="none" stroke={fabric.dark} strokeWidth="0.5" opacity="0.1" />
 
-      {/* Center placket line */}
-      <line x1={cx} y1={topY + 25} x2={cx} y2={hemY - 5} stroke={fabricDark} strokeWidth="0.8" opacity="0.3" />
-      <line x1={cx + 3} y1={topY + 25} x2={cx + 3} y2={hemY - 5} stroke={fabricDark} strokeWidth="0.4" opacity="0.15" />
+      {/* Side seam topstitching */}
+      <path d={`M ${cx - n.shoulder + 4} ${shY + 8}
+        C ${cx - chW + 2} ${chY - 10}, ${cx - chW + 2} ${chY}, ${cx - waW + 2} ${waY}
+        C ${cx - waW + 1} ${waY + 10}, ${cx - hmW + 2} ${hmY - 15}, ${cx - hmW + 1} ${hmY}`}
+        fill="none" stroke={fabric.dark} strokeWidth="0.6" opacity="0.12" strokeDasharray="2,4" />
+      <path d={`M ${cx + n.shoulder - 4} ${shY + 8}
+        C ${cx + chW - 2} ${chY - 10}, ${cx + chW - 2} ${chY}, ${cx + waW - 2} ${waY}
+        C ${cx + waW - 1} ${waY + 10}, ${cx + hmW - 2} ${hmY - 15}, ${cx + hmW - 1} ${hmY}`}
+        fill="none" stroke={fabric.dark} strokeWidth="0.6" opacity="0.12" strokeDasharray="2,4" />
 
-      {/* Buttons */}
-      {[0.12, 0.25, 0.38, 0.52, 0.66, 0.8].map((pct, i) => {
-        const by = shoulderY + n.length * pct;
+      {/* === PLACKET (center front) === */}
+      <rect x={cx - 5} y={topY + 30} width={10} height={hmY - topY - 35} fill={fabric.light} opacity="0.3" rx="1" />
+      <line x1={cx - 5} y1={topY + 30} x2={cx - 5} y2={hmY - 5} stroke={fabric.dark} strokeWidth="0.5" opacity="0.2" />
+      <line x1={cx + 5} y1={topY + 30} x2={cx + 5} y2={hmY - 5} stroke={fabric.dark} strokeWidth="0.5" opacity="0.2" />
+
+      {/* === BUTTONS === */}
+      {[0.08, 0.2, 0.33, 0.46, 0.6, 0.74, 0.88].map((pct, i) => {
+        const by = shY + n.length * pct;
         return (
           <g key={i}>
-            <circle cx={cx} cy={by} r={3.5} fill="#f8f9fa" stroke="#adb5bd" strokeWidth="0.8" />
-            <circle cx={cx - 1} cy={by - 1} r={0.8} fill="#adb5bd" />
-            <circle cx={cx + 1} cy={by - 1} r={0.8} fill="#adb5bd" />
-            <circle cx={cx - 1} cy={by + 1} r={0.8} fill="#adb5bd" />
-            <circle cx={cx + 1} cy={by + 1} r={0.8} fill="#adb5bd" />
+            {/* Button shadow */}
+            <circle cx={cx + 0.5} cy={by + 0.5} r={4} fill="#000" opacity="0.08" />
+            {/* Button body */}
+            <circle cx={cx} cy={by} r={3.8} fill="#f1f3f5" stroke="#ced4da" strokeWidth="0.6" />
+            {/* Button rim */}
+            <circle cx={cx} cy={by} r={3} fill="none" stroke="#dee2e6" strokeWidth="0.3" />
+            {/* 4-hole pattern */}
+            <circle cx={cx - 1.2} cy={by - 1.2} r={0.6} fill="#adb5bd" />
+            <circle cx={cx + 1.2} cy={by - 1.2} r={0.6} fill="#adb5bd" />
+            <circle cx={cx - 1.2} cy={by + 1.2} r={0.6} fill="#adb5bd" />
+            <circle cx={cx + 1.2} cy={by + 1.2} r={0.6} fill="#adb5bd" />
+            {/* Thread cross */}
+            <line x1={cx - 1.2} y1={by - 1.2} x2={cx + 1.2} y2={by + 1.2} stroke="#adb5bd" strokeWidth="0.3" />
+            <line x1={cx + 1.2} y1={by - 1.2} x2={cx - 1.2} y2={by + 1.2} stroke="#adb5bd" strokeWidth="0.3" />
+            {/* Buttonhole on opposite side */}
+            <ellipse cx={cx - 12} cy={by} rx={4} ry={1.2} fill="none" stroke={fabric.dark} strokeWidth="0.5" opacity="0.2" />
           </g>
         );
       })}
 
-      {/* Collar / Neck */}
+      {/* === COLLAR === */}
       {neckType === "collar" && (
-        <g>
+        <g filter="url(#mdepth)">
           {/* Collar band */}
-          <path
-            d={`M ${cx - n.neck * 0.9} ${topY + 10}
-                Q ${cx} ${topY - 5} ${cx + n.neck * 0.9} ${topY + 10}`}
-            fill={fabricLight} stroke={fabricDark} strokeWidth="1"
-          />
+          <path d={`M ${cx - n.neck} ${topY + 14}
+            Q ${cx - n.neck * 0.5} ${topY + 2}, ${cx} ${topY}
+            Q ${cx + n.neck * 0.5} ${topY + 2}, ${cx + n.neck} ${topY + 14}
+            Q ${cx + n.neck * 0.5} ${topY + 8}, ${cx} ${topY + 7}
+            Q ${cx - n.neck * 0.5} ${topY + 8}, ${cx - n.neck} ${topY + 14} Z`}
+            fill="url(#mcg)" stroke="#ccc" strokeWidth="0.6" />
           {/* Left collar leaf */}
-          <path
-            d={`M ${cx - n.neck * 0.5} ${topY + 8}
-                L ${cx - n.shoulder * 0.55} ${topY + 30}
-                L ${cx - n.neck * 0.15} ${topY + 22}
-                Z`}
-            fill={fabricLight} stroke={fabricDark} strokeWidth="0.8"
-          />
+          <path d={`M ${cx - n.neck * 0.6} ${topY + 10}
+            C ${cx - n.neck * 0.8} ${topY + 12}, ${cx - n.shoulder * 0.65} ${topY + 18}, ${cx - n.shoulder * 0.55} ${topY + 35}
+            L ${cx - n.neck * 0.08} ${topY + 26}
+            Q ${cx - n.neck * 0.3} ${topY + 16}, ${cx - n.neck * 0.6} ${topY + 10} Z`}
+            fill="url(#mcg)" stroke="#ccc" strokeWidth="0.6" />
+          {/* Collar fold shadow */}
+          <path d={`M ${cx - n.neck * 0.55} ${topY + 12}
+            Q ${cx - n.shoulder * 0.4} ${topY + 22}, ${cx - n.neck * 0.1} ${topY + 25}`}
+            fill="none" stroke="#bbb" strokeWidth="0.4" opacity="0.3" />
           {/* Right collar leaf */}
-          <path
-            d={`M ${cx + n.neck * 0.5} ${topY + 8}
-                L ${cx + n.shoulder * 0.55} ${topY + 30}
-                L ${cx + n.neck * 0.15} ${topY + 22}
-                Z`}
-            fill={fabricLight} stroke={fabricDark} strokeWidth="0.8"
-          />
+          <path d={`M ${cx + n.neck * 0.6} ${topY + 10}
+            C ${cx + n.neck * 0.8} ${topY + 12}, ${cx + n.shoulder * 0.65} ${topY + 18}, ${cx + n.shoulder * 0.55} ${topY + 35}
+            L ${cx + n.neck * 0.08} ${topY + 26}
+            Q ${cx + n.neck * 0.3} ${topY + 16}, ${cx + n.neck * 0.6} ${topY + 10} Z`}
+            fill="url(#mcg)" stroke="#ccc" strokeWidth="0.6" />
+          <path d={`M ${cx + n.neck * 0.55} ${topY + 12}
+            Q ${cx + n.shoulder * 0.4} ${topY + 22}, ${cx + n.neck * 0.1} ${topY + 25}`}
+            fill="none" stroke="#bbb" strokeWidth="0.4" opacity="0.3" />
         </g>
       )}
       {neckType === "mandarin" && (
-        <g>
-          <path
-            d={`M ${cx - n.neck * 0.7} ${topY + 14}
-                Q ${cx - n.neck * 0.7} ${topY - 2} ${cx} ${topY - 5}
-                Q ${cx + n.neck * 0.7} ${topY - 2} ${cx + n.neck * 0.7} ${topY + 14}`}
-            fill={fabricLight} stroke={fabricDark} strokeWidth="1.2"
-          />
-          <line x1={cx} y1={topY - 4} x2={cx} y2={topY + 14} stroke={fabricDark} strokeWidth="0.5" />
+        <g filter="url(#mdepth)">
+          <path d={`M ${cx - n.neck * 0.75} ${topY + 16}
+            Q ${cx - n.neck * 0.75} ${topY - 4}, ${cx} ${topY - 6}
+            Q ${cx + n.neck * 0.75} ${topY - 4}, ${cx + n.neck * 0.75} ${topY + 16}
+            Q ${cx + n.neck * 0.4} ${topY + 12}, ${cx} ${topY + 11}
+            Q ${cx - n.neck * 0.4} ${topY + 12}, ${cx - n.neck * 0.75} ${topY + 16} Z`}
+            fill={fabric.light} stroke={fabric.dark} strokeWidth="0.8" />
+          <line x1={cx} y1={topY - 5} x2={cx} y2={topY + 11} stroke={fabric.dark} strokeWidth="0.4" opacity="0.3" />
+          {/* Hook/eye closure */}
+          <circle cx={cx - 2} cy={topY + 3} r={1} fill={fabric.accent} opacity="0.4" />
+          <circle cx={cx + 2} cy={topY + 3} r={1} fill={fabric.accent} opacity="0.4" />
         </g>
-      )}
-      {neckType === "round" && (
-        <path
-          d={`M ${cx - n.neck * 0.8} ${topY + 15}
-              Q ${cx} ${topY - 8} ${cx + n.neck * 0.8} ${topY + 15}`}
-          fill="none" stroke={fabricDark} strokeWidth="2"
-        />
       )}
 
       {/* Breast pocket */}
-      <rect x={cx + n.chest * 0.2} y={chestY - 15} width={n.chest * 0.3} height={n.chest * 0.25}
-        fill="none" stroke={fabricDark} strokeWidth="0.6" opacity="0.25" rx="1" />
+      <path d={`M ${cx + chW * 0.18} ${chY - 18}
+        L ${cx + chW * 0.18} ${chY - 3}
+        Q ${cx + chW * 0.35} ${chY - 2}, ${cx + chW * 0.5} ${chY - 3}
+        L ${cx + chW * 0.5} ${chY - 18} Z`}
+        fill="none" stroke={fabric.dark} strokeWidth="0.5" opacity="0.2" />
+      {/* Pocket flap shadow */}
+      <line x1={cx + chW * 0.19} y1={chY - 17} x2={cx + chW * 0.49} y2={chY - 17}
+        stroke={fabric.dark} strokeWidth="0.4" opacity="0.1" />
+
+      {/* Hem stitching */}
+      <path d={`M ${cx - hmW + 3} ${hmY - 2} Q ${cx} ${hmY + 3} ${cx + hmW - 3} ${hmY - 2}`}
+        fill="none" stroke={fabric.dark} strokeWidth="0.4" opacity="0.15" strokeDasharray="2,2" />
     </g>
   );
 }
 
-function FemaleBlouse({
-  n,
-  style,
-}: {
-  m: BodyMeasurements;
-  n: ReturnType<typeof normalize>;
-  style: StyleInfo | null;
-}) {
+/* ------------------------------------------------------------------ */
+/*  FEMALE BLOUSE / KURTI                                              */
+/* ------------------------------------------------------------------ */
+function FemaleBlouse({ n, style }: { n: ReturnType<typeof normalize>; style: StyleInfo | null }) {
   const cx = 300;
-  const topY = 100;
+  const topY = 90;
   const neckType = style?.neck_type || "round";
   const sleeveType = style?.sleeve_type || "full";
-  const sleeveFactor = sleeveType === "half" ? 0.4 : sleeveType === "3-quarter" ? 0.72 : sleeveType === "sleeveless" ? 0 : 1;
-  const sleeveLen = n.sleeve * sleeveFactor;
+  const sf = sleeveType === "half" ? 0.4 : sleeveType === "3-quarter" ? 0.72 : sleeveType === "sleeveless" ? 0 : 1;
+  const sleeveLen = n.sleeve * sf;
   const isLong = (style?.length_factor || 1) > 1.2;
 
-  const shoulderY = topY + 20;
-  const bustY = shoulderY + n.length * 0.22;
-  const waistY = shoulderY + n.length * 0.5;
-  const hipY = shoulderY + n.length * 0.72;
-  const hemY = shoulderY + n.length;
+  const shY = topY + 22;
+  const buY = shY + n.length * 0.22;
+  const waY = shY + n.length * 0.5;
+  const hiY = shY + n.length * 0.72;
+  const hmY = shY + n.length;
 
-  const shoulderW = n.shoulder * 0.95;
-  const bustW = n.chest * 1.08;
-  const waistW = n.waist * 0.85;
-  const hipW = isLong ? n.waist * 1.15 : n.waist * 1.0;
-  const hemW = isLong ? n.waist * 1.3 : n.waist * 1.0;
+  const shW = n.shoulder * 0.95;
+  const buW = n.chest * 1.08;
+  const waW = n.waist * (isLong ? 0.82 : 0.85);
+  const hiW = isLong ? n.waist * 1.15 : n.waist * 1.0;
+  const hmW = isLong ? n.waist * 1.35 : n.waist * 1.0;
 
-  const fabricMain = neckType === "round" && isLong ? "#f0d4e8" : "#e8d0f0";
-  const fabricDark = neckType === "round" && isLong ? "#c9a2b8" : "#b89cc8";
-  const fabricLight = neckType === "round" && isLong ? "#f8eaf4" : "#f3eaf8";
+  const fabric = isLong
+    ? { main: "#f0d0e0", mid: "#e0b0c8", dark: "#c080a0", light: "#f8e8f0", accent: "#d4618c" }
+    : { main: "#e0d0f0", mid: "#c8b0e0", dark: "#9878c0", light: "#f0e8f8", accent: "#7b5ea7" };
 
-  const sleeveAngle = 0.4;
-  const sleeveEndX = shoulderW + sleeveLen * Math.cos(sleeveAngle);
-  const sleeveEndY = shoulderY + sleeveLen * Math.sin(sleeveAngle);
-  const slvW = n.chest * 0.22;
+  const slvA = 0.4;
+  const slvEX = shW + sleeveLen * Math.cos(slvA);
+  const slvEY = shY + sleeveLen * Math.sin(slvA);
+  const slvW = n.chest * 0.24;
 
   return (
     <g>
       <defs>
-        <linearGradient id="fFabric" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor={fabricLight} />
-          <stop offset="50%" stopColor={fabricMain} />
-          <stop offset="100%" stopColor={fabricDark} />
+        <linearGradient id="ffg" x1="30%" y1="0%" x2="70%" y2="100%">
+          <stop offset="0%" stopColor={fabric.light} />
+          <stop offset="35%" stopColor={fabric.main} />
+          <stop offset="65%" stopColor={fabric.mid} />
+          <stop offset="100%" stopColor={fabric.dark} />
         </linearGradient>
-        <pattern id="f-texture" patternUnits="userSpaceOnUse" width="3" height="3">
-          <rect width="3" height="3" fill={fabricMain} />
-          <circle cx="1.5" cy="1.5" r="0.3" fill={fabricDark} opacity="0.08" />
+        <linearGradient id="fsg" x1="0%" y1="0%" x2="100%" y2="50%">
+          <stop offset="0%" stopColor={fabric.main} />
+          <stop offset="100%" stopColor={fabric.dark} />
+        </linearGradient>
+        <pattern id="fweave" patternUnits="userSpaceOnUse" width="5" height="5">
+          <rect width="5" height="5" fill="transparent" />
+          <circle cx="2.5" cy="2.5" r="0.4" fill={fabric.dark} opacity="0.06" />
         </pattern>
-        <filter id="fShadow">
-          <feDropShadow dx="2" dy="3" stdDeviation="4" floodOpacity="0.15" />
+        <filter id="fsh">
+          <feGaussianBlur in="SourceAlpha" stdDeviation="5" />
+          <feOffset dx="3" dy="5" />
+          <feComponentTransfer><feFuncA type="linear" slope="0.18" /></feComponentTransfer>
+          <feMerge><feMergeNode /><feMergeNode in="SourceGraphic" /></feMerge>
         </filter>
       </defs>
 
-      {/* Sleeves */}
+      {/* === SLEEVES === */}
       {sleeveType !== "sleeveless" && (
         <>
-          {/* Left Sleeve */}
-          <path
-            d={`M ${cx - shoulderW} ${shoulderY}
-                L ${cx - sleeveEndX} ${sleeveEndY - slvW * 0.2}
-                Q ${cx - sleeveEndX - 2} ${sleeveEndY + slvW * 0.4} ${cx - sleeveEndX + slvW * 0.4} ${sleeveEndY + slvW * 0.7}
-                L ${cx - shoulderW + 5} ${shoulderY + n.length * 0.16}
-                Z`}
-            fill={fabricMain} stroke={fabricDark} strokeWidth="1" filter="url(#fShadow)"
-          />
-          {/* Right Sleeve */}
-          <path
-            d={`M ${cx + shoulderW} ${shoulderY}
-                L ${cx + sleeveEndX} ${sleeveEndY - slvW * 0.2}
-                Q ${cx + sleeveEndX + 2} ${sleeveEndY + slvW * 0.4} ${cx + sleeveEndX - slvW * 0.4} ${sleeveEndY + slvW * 0.7}
-                L ${cx + shoulderW - 5} ${shoulderY + n.length * 0.16}
-                Z`}
-            fill={fabricMain} stroke={fabricDark} strokeWidth="1" filter="url(#fShadow)"
-          />
-          {/* Sleeve gather/puff lines */}
+          <path d={`M ${cx - shW} ${shY}
+            C ${cx - shW - sleeveLen * 0.3} ${shY + sleeveLen * 0.04},
+              ${cx - slvEX + 5} ${slvEY - slvW * 0.4},
+              ${cx - slvEX} ${slvEY - slvW * 0.1}
+            Q ${cx - slvEX - 3} ${slvEY + slvW * 0.35},
+              ${cx - slvEX + slvW * 0.4} ${slvEY + slvW * 0.65}
+            C ${cx - slvEX + slvW * 0.6} ${slvEY + slvW * 0.3},
+              ${cx - shW + 6} ${shY + n.length * 0.14},
+              ${cx - shW + 4} ${shY + n.length * 0.12} Z`}
+            fill="url(#fsg)" stroke={fabric.dark} strokeWidth="0.8" filter="url(#fsh)" />
+          {/* Puff gather at shoulder */}
           {sleeveType === "half" && (
             <>
-              <path d={`M ${cx - sleeveEndX + 5} ${sleeveEndY + slvW * 0.2} Q ${cx - sleeveEndX} ${sleeveEndY + slvW * 0.55} ${cx - sleeveEndX + slvW * 0.3} ${sleeveEndY + slvW * 0.65}`}
-                fill="none" stroke={fabricDark} strokeWidth="0.5" opacity="0.3" />
-              <path d={`M ${cx + sleeveEndX - 5} ${sleeveEndY + slvW * 0.2} Q ${cx + sleeveEndX} ${sleeveEndY + slvW * 0.55} ${cx + sleeveEndX - slvW * 0.3} ${sleeveEndY + slvW * 0.65}`}
-                fill="none" stroke={fabricDark} strokeWidth="0.5" opacity="0.3" />
+              <path d={`M ${cx - shW - 2} ${shY + 3} Q ${cx - shW - 8} ${shY + 8} ${cx - shW - 3} ${shY + 14}`}
+                fill="none" stroke={fabric.dark} strokeWidth="0.5" opacity="0.15" />
+              <path d={`M ${cx - shW - 5} ${shY + 5} Q ${cx - shW - 12} ${shY + 10} ${cx - shW - 6} ${shY + 16}`}
+                fill="none" stroke={fabric.dark} strokeWidth="0.4" opacity="0.1" />
+            </>
+          )}
+          <path d={`M ${cx + shW} ${shY}
+            C ${cx + shW + sleeveLen * 0.3} ${shY + sleeveLen * 0.04},
+              ${cx + slvEX - 5} ${slvEY - slvW * 0.4},
+              ${cx + slvEX} ${slvEY - slvW * 0.1}
+            Q ${cx + slvEX + 3} ${slvEY + slvW * 0.35},
+              ${cx + slvEX - slvW * 0.4} ${slvEY + slvW * 0.65}
+            C ${cx + slvEX - slvW * 0.6} ${slvEY + slvW * 0.3},
+              ${cx + shW - 6} ${shY + n.length * 0.14},
+              ${cx + shW - 4} ${shY + n.length * 0.12} Z`}
+            fill="url(#fsg)" stroke={fabric.dark} strokeWidth="0.8" filter="url(#fsh)" />
+          {sleeveType === "half" && (
+            <>
+              <path d={`M ${cx + shW + 2} ${shY + 3} Q ${cx + shW + 8} ${shY + 8} ${cx + shW + 3} ${shY + 14}`}
+                fill="none" stroke={fabric.dark} strokeWidth="0.5" opacity="0.15" />
             </>
           )}
         </>
       )}
 
-      {/* Main Body */}
-      <path
-        d={`M ${cx - n.neck * 0.7} ${topY + 12}
-            Q ${cx - shoulderW * 0.5} ${topY + 3} ${cx - shoulderW} ${shoulderY}
-            L ${cx - shoulderW + 3} ${shoulderY + 10}
-            Q ${cx - bustW - 3} ${bustY - 8} ${cx - bustW} ${bustY}
-            Q ${cx - bustW + 8} ${(bustY + waistY) / 2} ${cx - waistW} ${waistY}
-            Q ${cx - hipW - 2} ${(waistY + hipY) / 2} ${cx - hipW} ${hipY}
-            Q ${cx - hemW} ${(hipY + hemY) / 2} ${cx - hemW} ${hemY}
-            Q ${cx} ${hemY + (isLong ? 8 : 3)} ${cx + hemW} ${hemY}
-            Q ${cx + hemW} ${(hipY + hemY) / 2} ${cx + hipW} ${hipY}
-            Q ${cx + hipW + 2} ${(waistY + hipY) / 2} ${cx + waistW} ${waistY}
-            Q ${cx + bustW - 8} ${(bustY + waistY) / 2} ${cx + bustW} ${bustY}
-            Q ${cx + bustW + 3} ${bustY - 8} ${cx + shoulderW - 3} ${shoulderY + 10}
-            L ${cx + shoulderW} ${shoulderY}
-            Q ${cx + shoulderW * 0.5} ${topY + 3} ${cx + n.neck * 0.7} ${topY + 12}
-            Z`}
-        fill="url(#f-texture)"
-        stroke={fabricDark}
-        strokeWidth="1.2"
-        filter="url(#fShadow)"
-      />
+      {/* === MAIN BODY === */}
+      <path d={`M ${cx - n.neck * 0.7} ${topY + 14}
+        C ${cx - shW * 0.6} ${topY + 4}, ${cx - shW + 4} ${shY - 3}, ${cx - shW} ${shY}
+        L ${cx - shW + 3} ${shY + 8}
+        C ${cx - buW - 4} ${buY - 12}, ${cx - buW - 2} ${buY - 4}, ${cx - buW} ${buY}
+        C ${cx - buW + 10} ${buY + 18}, ${cx - waW - 5} ${waY - 18}, ${cx - waW} ${waY}
+        C ${cx - hiW - 3} ${(waY + hiY) / 2}, ${cx - hiW - 1} ${hiY - 5}, ${cx - hiW} ${hiY}
+        C ${cx - hmW + 2} ${(hiY + hmY) / 2}, ${cx - hmW} ${hmY - 8}, ${cx - hmW} ${hmY}
+        Q ${cx} ${hmY + (isLong ? 10 : 4)} ${cx + hmW} ${hmY}
+        C ${cx + hmW} ${hmY - 8}, ${cx + hmW - 2} ${(hiY + hmY) / 2}, ${cx + hiW} ${hiY}
+        C ${cx + hiW + 1} ${hiY - 5}, ${cx + hiW + 3} ${(waY + hiY) / 2}, ${cx + waW} ${waY}
+        C ${cx + waW + 5} ${waY - 18}, ${cx + buW - 10} ${buY + 18}, ${cx + buW} ${buY}
+        C ${cx + buW + 2} ${buY - 4}, ${cx + buW + 4} ${buY - 12}, ${cx + shW - 3} ${shY + 8}
+        L ${cx + shW} ${shY}
+        C ${cx + shW - 4} ${shY - 3}, ${cx + shW * 0.6} ${topY + 4}, ${cx + n.neck * 0.7} ${topY + 14}
+        Z`}
+        fill="url(#ffg)" stroke={fabric.dark} strokeWidth="1" filter="url(#fsh)" />
+      <path d={`M ${cx - n.neck * 0.7} ${topY + 14}
+        C ${cx - shW * 0.6} ${topY + 4}, ${cx - shW + 4} ${shY - 3}, ${cx - shW} ${shY}
+        L ${cx - shW + 3} ${shY + 8}
+        C ${cx - buW - 4} ${buY - 12}, ${cx - buW - 2} ${buY - 4}, ${cx - buW} ${buY}
+        C ${cx - buW + 10} ${buY + 18}, ${cx - waW - 5} ${waY - 18}, ${cx - waW} ${waY}
+        C ${cx - hiW - 3} ${(waY + hiY) / 2}, ${cx - hiW - 1} ${hiY - 5}, ${cx - hiW} ${hiY}
+        C ${cx - hmW + 2} ${(hiY + hmY) / 2}, ${cx - hmW} ${hmY - 8}, ${cx - hmW} ${hmY}
+        Q ${cx} ${hmY + (isLong ? 10 : 4)} ${cx + hmW} ${hmY}
+        C ${cx + hmW} ${hmY - 8}, ${cx + hmW - 2} ${(hiY + hmY) / 2}, ${cx + hiW} ${hiY}
+        C ${cx + hiW + 1} ${hiY - 5}, ${cx + hiW + 3} ${(waY + hiY) / 2}, ${cx + waW} ${waY}
+        C ${cx + waW + 5} ${waY - 18}, ${cx + buW - 10} ${buY + 18}, ${cx + buW} ${buY}
+        C ${cx + buW + 2} ${buY - 4}, ${cx + buW + 4} ${buY - 12}, ${cx + shW - 3} ${shY + 8}
+        L ${cx + shW} ${shY}
+        C ${cx + shW - 4} ${shY - 3}, ${cx + shW * 0.6} ${topY + 4}, ${cx + n.neck * 0.7} ${topY + 14}
+        Z`}
+        fill="url(#fweave)" />
 
-      {/* Waist definition - dart lines */}
-      <path d={`M ${cx - bustW * 0.5} ${bustY + 5} Q ${cx - waistW * 0.5} ${waistY} ${cx - hipW * 0.5} ${hipY - 5}`}
-        fill="none" stroke={fabricDark} strokeWidth="0.5" opacity="0.2" strokeDasharray="4,3" />
-      <path d={`M ${cx + bustW * 0.5} ${bustY + 5} Q ${cx + waistW * 0.5} ${waistY} ${cx + hipW * 0.5} ${hipY - 5}`}
-        fill="none" stroke={fabricDark} strokeWidth="0.5" opacity="0.2" strokeDasharray="4,3" />
+      {/* Bust dart lines */}
+      <path d={`M ${cx - buW * 0.45} ${buY} Q ${cx - waW * 0.45} ${(buY + waY) / 2} ${cx - waW * 0.5} ${waY - 5}`}
+        fill="none" stroke={fabric.dark} strokeWidth="0.5" opacity="0.12" />
+      <path d={`M ${cx + buW * 0.45} ${buY} Q ${cx + waW * 0.45} ${(buY + waY) / 2} ${cx + waW * 0.5} ${waY - 5}`}
+        fill="none" stroke={fabric.dark} strokeWidth="0.5" opacity="0.12" />
+      {/* Waist gather folds */}
+      <path d={`M ${cx - 6} ${waY - 8} Q ${cx - 10} ${waY} ${cx - 5} ${waY + 12}`}
+        fill="none" stroke={fabric.dark} strokeWidth="0.4" opacity="0.08" />
+      <path d={`M ${cx + 8} ${waY - 5} Q ${cx + 12} ${waY + 3} ${cx + 6} ${waY + 15}`}
+        fill="none" stroke={fabric.dark} strokeWidth="0.4" opacity="0.08" />
 
-      {/* Neckline */}
+      {/* === NECKLINE === */}
       {neckType === "round" && (
-        <path
-          d={`M ${cx - n.neck * 0.7} ${topY + 12}
-              Q ${cx} ${topY - 12} ${cx + n.neck * 0.7} ${topY + 12}`}
-          fill="none" stroke={fabricDark} strokeWidth="2.5"
-        />
+        <g>
+          <path d={`M ${cx - n.neck * 0.7} ${topY + 14}
+            Q ${cx - n.neck * 0.3} ${topY - 6}, ${cx} ${topY - 10}
+            Q ${cx + n.neck * 0.3} ${topY - 6}, ${cx + n.neck * 0.7} ${topY + 14}`}
+            fill="none" stroke={fabric.dark} strokeWidth="2.5" />
+          <path d={`M ${cx - n.neck * 0.65} ${topY + 12}
+            Q ${cx - n.neck * 0.25} ${topY - 3}, ${cx} ${topY - 7}
+            Q ${cx + n.neck * 0.25} ${topY - 3}, ${cx + n.neck * 0.65} ${topY + 12}`}
+            fill="none" stroke={fabric.accent} strokeWidth="1" opacity="0.4" />
+          {/* Embroidery dots around neckline */}
+          {isLong && Array.from({ length: 16 }).map((_, i) => {
+            const t = i / 15;
+            const angle = Math.PI * (0.15 + t * 0.7);
+            const rx = n.neck * 0.85;
+            const ry = n.neck * 0.55;
+            const px = cx + Math.cos(angle) * rx;
+            const py = topY + 3 - Math.sin(angle) * ry;
+            return <circle key={i} cx={px} cy={py} r={1.5} fill={fabric.accent} opacity="0.25" />;
+          })}
+        </g>
       )}
       {neckType === "v-neck" && (
-        <>
-          <line x1={cx - n.neck * 0.7} y1={topY + 12} x2={cx} y2={topY + 50} stroke={fabricDark} strokeWidth="2" />
-          <line x1={cx + n.neck * 0.7} y1={topY + 12} x2={cx} y2={topY + 50} stroke={fabricDark} strokeWidth="2" />
-        </>
+        <g>
+          <path d={`M ${cx - n.neck * 0.7} ${topY + 14}
+            L ${cx} ${topY + 55}
+            L ${cx + n.neck * 0.7} ${topY + 14}`}
+            fill="none" stroke={fabric.dark} strokeWidth="2" />
+          <path d={`M ${cx - n.neck * 0.65} ${topY + 15}
+            L ${cx} ${topY + 52}
+            L ${cx + n.neck * 0.65} ${topY + 15}`}
+            fill="none" stroke={fabric.accent} strokeWidth="0.8" opacity="0.3" />
+        </g>
       )}
       {neckType === "collar" && (
         <g>
-          <path d={`M ${cx - n.neck * 0.8} ${topY + 8} Q ${cx} ${topY - 8} ${cx + n.neck * 0.8} ${topY + 8}`}
-            fill={fabricLight} stroke={fabricDark} strokeWidth="1" />
-          <path d={`M ${cx - n.neck * 0.4} ${topY + 6} L ${cx - shoulderW * 0.45} ${topY + 24} L ${cx - n.neck * 0.1} ${topY + 18} Z`}
-            fill={fabricLight} stroke={fabricDark} strokeWidth="0.6" />
-          <path d={`M ${cx + n.neck * 0.4} ${topY + 6} L ${cx + shoulderW * 0.45} ${topY + 24} L ${cx + n.neck * 0.1} ${topY + 18} Z`}
-            fill={fabricLight} stroke={fabricDark} strokeWidth="0.6" />
-          <line x1={cx} y1={topY + 20} x2={cx} y2={hemY - 5} stroke={fabricDark} strokeWidth="0.6" opacity="0.25" />
+          <path d={`M ${cx - n.neck * 0.8} ${topY + 10}
+            Q ${cx} ${topY - 10} ${cx + n.neck * 0.8} ${topY + 10}
+            Q ${cx} ${topY + 4} ${cx - n.neck * 0.8} ${topY + 10} Z`}
+            fill="#f8f9fa" stroke="#ccc" strokeWidth="0.6" />
+          <path d={`M ${cx - n.neck * 0.4} ${topY + 7}
+            L ${cx - shW * 0.42} ${topY + 24} L ${cx - n.neck * 0.08} ${topY + 19} Z`}
+            fill="#f8f9fa" stroke="#ccc" strokeWidth="0.5" />
+          <path d={`M ${cx + n.neck * 0.4} ${topY + 7}
+            L ${cx + shW * 0.42} ${topY + 24} L ${cx + n.neck * 0.08} ${topY + 19} Z`}
+            fill="#f8f9fa" stroke="#ccc" strokeWidth="0.5" />
+          <line x1={cx} y1={topY + 20} x2={cx} y2={hmY - 5} stroke={fabric.dark} strokeWidth="0.5" opacity="0.15" />
           {[0.15, 0.3, 0.45, 0.6, 0.75].map((p, i) => (
-            <circle key={i} cx={cx} cy={shoulderY + n.length * p} r={2.5} fill="#f8f9fa" stroke="#ccc" strokeWidth="0.6" />
+            <g key={i}>
+              <circle cx={cx} cy={shY + n.length * p} r={2.5} fill="#f1f3f5" stroke="#ced4da" strokeWidth="0.5" />
+              <circle cx={cx - 0.8} cy={shY + n.length * p - 0.8} r={0.4} fill="#adb5bd" />
+              <circle cx={cx + 0.8} cy={shY + n.length * p + 0.8} r={0.4} fill="#adb5bd" />
+            </g>
           ))}
         </g>
       )}
 
-      {/* Decorative elements for Indian styles */}
-      {isLong && neckType === "round" && (
-        <g opacity="0.3">
-          {/* Embroidery pattern at neckline */}
-          {Array.from({ length: 12 }).map((_, i) => {
-            const angle = (Math.PI / 12) * i + Math.PI / 12;
-            const r = n.neck * 0.85;
-            const px = cx + Math.cos(angle - Math.PI / 2) * r * 1.1;
-            const py = topY + 3 + Math.sin(angle - Math.PI / 2) * r * 0.6;
-            return <circle key={i} cx={px} cy={py} r={1.5} fill={fabricDark} />;
-          })}
-          {/* Border at hem */}
-          <path d={`M ${cx - hemW + 5} ${hemY - 8} L ${cx + hemW - 5} ${hemY - 8}`}
-            stroke={fabricDark} strokeWidth="2" strokeDasharray="6,3" />
-          <path d={`M ${cx - hemW + 5} ${hemY - 4} L ${cx + hemW - 5} ${hemY - 4}`}
-            stroke={fabricDark} strokeWidth="1" />
+      {/* Border at hem for long styles */}
+      {isLong && (
+        <g opacity="0.25">
+          <path d={`M ${cx - hmW + 5} ${hmY - 12} Q ${cx} ${hmY - 8} ${cx + hmW - 5} ${hmY - 12}`}
+            fill="none" stroke={fabric.accent} strokeWidth="2.5" />
+          <path d={`M ${cx - hmW + 5} ${hmY - 6} Q ${cx} ${hmY - 2} ${cx + hmW - 5} ${hmY - 6}`}
+            fill="none" stroke={fabric.accent} strokeWidth="1.5" />
+          <path d={`M ${cx - hmW + 5} ${hmY - 2} Q ${cx} ${hmY + 2} ${cx + hmW - 5} ${hmY - 2}`}
+            fill="none" stroke={fabric.accent} strokeWidth="0.8" />
         </g>
       )}
     </g>
   );
 }
 
-function MeasurementAnnotations({
-  m,
-  n,
-  gender,
-  style,
-}: {
-  m: BodyMeasurements;
-  n: ReturnType<typeof normalize>;
-  gender: string;
-  style: StyleInfo | null;
+/* ------------------------------------------------------------------ */
+/*  MEASUREMENT ANNOTATIONS                                            */
+/* ------------------------------------------------------------------ */
+function Annotations({ m, n, gender, style }: {
+  m: BodyMeasurements; n: ReturnType<typeof normalize>; gender: string; style: StyleInfo | null;
 }) {
   const cx = 300;
-  const topY = 100;
-  const shoulderY = topY + (gender === "female" ? 20 : 25);
-  const chestY = shoulderY + n.length * (gender === "female" ? 0.22 : 0.28);
-  const waistY = shoulderY + n.length * (gender === "female" ? 0.5 : 0.62);
-  const hemY = shoulderY + n.length;
-  const shoulderW = gender === "female" ? n.shoulder * 0.95 : n.shoulder;
-
-  const sleeveType = style?.sleeve_type || "full";
-  const sleeveFactor = sleeveType === "half" ? 0.4 : sleeveType === "3-quarter" ? 0.72 : 1;
-  const actualSleeve = n.sleeve * sleeveFactor;
+  const topY = 90;
+  const shY = topY + (gender === "female" ? 22 : 28);
+  const chY = shY + n.length * (gender === "female" ? 0.22 : 0.28);
+  const waY = shY + n.length * (gender === "female" ? 0.5 : 0.62);
+  const hmY = shY + n.length;
+  const shW = gender === "female" ? n.shoulder * 0.95 : n.shoulder;
+  const slvType = style?.sleeve_type || "full";
+  const slvF = slvType === "half" ? 0.4 : slvType === "3-quarter" ? 0.72 : 1;
+  const aSlv = n.sleeve * slvF;
 
   return (
-    <g>
-      {/* Shoulder width */}
-      <line x1={cx - shoulderW} y1={shoulderY - 8} x2={cx + shoulderW} y2={shoulderY - 8}
-        stroke="#22c55e" strokeWidth="1.5" markerEnd="url(#arrowG)" markerStart="url(#arrowG)" />
-      <text x={cx} y={shoulderY - 14} textAnchor="middle" fill="#22c55e" fontSize="11" fontWeight="600">
+    <g fontFamily="system-ui, sans-serif">
+      <defs>
+        <marker id="arr" markerWidth="6" markerHeight="4" refX="3" refY="2" orient="auto">
+          <path d="M0,0 L6,2 L0,4" fill="none" stroke="#22c55e" strokeWidth="0.8" />
+        </marker>
+      </defs>
+
+      {/* Shoulder */}
+      <line x1={cx - shW} y1={shY - 10} x2={cx + shW} y2={shY - 10}
+        stroke="#22c55e" strokeWidth="1.5" markerEnd="url(#arr)" markerStart="url(#arr)" />
+      <rect x={cx - 35} y={shY - 30} width="70" height="18" rx="4" fill="#0d1117" fillOpacity="0.85" />
+      <text x={cx} y={shY - 16} textAnchor="middle" fill="#22c55e" fontSize="11" fontWeight="600">
         {m.shoulder_width_cm} cm
-      </text>
-      <text x={cx} y={shoulderY - 24} textAnchor="middle" fill="#22c55e" fontSize="9" opacity="0.7">
-        Shoulder
       </text>
 
       {/* Chest */}
-      <line x1={cx - n.chest * 1.15} y1={chestY} x2={cx + n.chest * 1.15} y2={chestY}
-        stroke="#ef4444" strokeWidth="1.5" strokeDasharray="4,2" />
-      <rect x={cx + n.chest * 1.15 + 4} y={chestY - 16} width="80" height="28" rx="4" fill="#1f1f1f" fillOpacity="0.85" />
-      <text x={cx + n.chest * 1.15 + 10} y={chestY - 2} fill="#ef4444" fontSize="10" fontWeight="600">
-        Chest
-      </text>
-      <text x={cx + n.chest * 1.15 + 10} y={chestY + 9} fill="#ef4444" fontSize="9">
-        {m.chest_circumference_cm} cm
-      </text>
+      <line x1={cx - n.chest * 1.1} y1={chY} x2={cx + n.chest * 1.1} y2={chY}
+        stroke="#ef4444" strokeWidth="1" strokeDasharray="4,3" opacity="0.6" />
+      <rect x={cx + n.chest * 1.1 + 6} y={chY - 14} width="72" height="26" rx="4" fill="#0d1117" fillOpacity="0.9" />
+      <text x={cx + n.chest * 1.1 + 12} y={chY - 1} fill="#ef4444" fontSize="9" fontWeight="600">Chest</text>
+      <text x={cx + n.chest * 1.1 + 12} y={chY + 9} fill="#ef4444" fontSize="10">{m.chest_circumference_cm} cm</text>
 
       {/* Waist */}
-      <line x1={cx - n.waist * 1.05} y1={waistY} x2={cx + n.waist * 1.05} y2={waistY}
-        stroke="#a855f7" strokeWidth="1.5" strokeDasharray="4,2" />
-      <rect x={cx + n.waist * 1.05 + 4} y={waistY - 16} width="74" height="28" rx="4" fill="#1f1f1f" fillOpacity="0.85" />
-      <text x={cx + n.waist * 1.05 + 10} y={waistY - 2} fill="#a855f7" fontSize="10" fontWeight="600">
-        Waist
-      </text>
-      <text x={cx + n.waist * 1.05 + 10} y={waistY + 9} fill="#a855f7" fontSize="9">
-        {m.waist_cm} cm
-      </text>
+      <line x1={cx - n.waist * 1.0} y1={waY} x2={cx + n.waist * 1.0} y2={waY}
+        stroke="#a855f7" strokeWidth="1" strokeDasharray="4,3" opacity="0.6" />
+      <rect x={cx + n.waist * 1.0 + 6} y={waY - 14} width="68" height="26" rx="4" fill="#0d1117" fillOpacity="0.9" />
+      <text x={cx + n.waist * 1.0 + 12} y={waY - 1} fill="#a855f7" fontSize="9" fontWeight="600">Waist</text>
+      <text x={cx + n.waist * 1.0 + 12} y={waY + 9} fill="#a855f7" fontSize="10">{m.waist_cm} cm</text>
 
       {/* Length */}
-      <line x1={cx - shoulderW - 20} y1={shoulderY} x2={cx - shoulderW - 20} y2={hemY}
-        stroke="#06b6d4" strokeWidth="1.5" />
-      <line x1={cx - shoulderW - 25} y1={shoulderY} x2={cx - shoulderW - 15} y2={shoulderY}
-        stroke="#06b6d4" strokeWidth="1" />
-      <line x1={cx - shoulderW - 25} y1={hemY} x2={cx - shoulderW - 15} y2={hemY}
-        stroke="#06b6d4" strokeWidth="1" />
-      <text x={cx - shoulderW - 24} y={(shoulderY + hemY) / 2} fill="#06b6d4" fontSize="10"
-        fontWeight="600" textAnchor="end" dominantBaseline="middle">
-        {m.shirt_length_cm} cm
-      </text>
-      <text x={cx - shoulderW - 24} y={(shoulderY + hemY) / 2 + 12} fill="#06b6d4" fontSize="8"
-        textAnchor="end" opacity="0.7">
-        Length
-      </text>
+      <line x1={cx - shW - 22} y1={shY} x2={cx - shW - 22} y2={hmY} stroke="#06b6d4" strokeWidth="1.5" />
+      <line x1={cx - shW - 27} y1={shY} x2={cx - shW - 17} y2={shY} stroke="#06b6d4" strokeWidth="0.8" />
+      <line x1={cx - shW - 27} y1={hmY} x2={cx - shW - 17} y2={hmY} stroke="#06b6d4" strokeWidth="0.8" />
+      <rect x={cx - shW - 70} y={(shY + hmY) / 2 - 14} width="46" height="26" rx="4" fill="#0d1117" fillOpacity="0.9" />
+      <text x={cx - shW - 47} y={(shY + hmY) / 2 - 1} fill="#06b6d4" fontSize="9" fontWeight="600" textAnchor="middle">Length</text>
+      <text x={cx - shW - 47} y={(shY + hmY) / 2 + 9} fill="#06b6d4" fontSize="10" textAnchor="middle">{m.shirt_length_cm}</text>
 
       {/* Sleeve */}
-      {sleeveType !== "sleeveless" && (
+      {slvType !== "sleeveless" && (
         <>
-          <line x1={cx + shoulderW + 3} y1={shoulderY}
-            x2={cx + shoulderW + actualSleeve * 0.7 + 3} y2={shoulderY + actualSleeve * 0.4}
+          <line x1={cx + shW + 3} y1={shY}
+            x2={cx + shW + aSlv * 0.7 + 3} y2={shY + aSlv * 0.4}
             stroke="#f97316" strokeWidth="1.5" />
-          <rect x={cx + shoulderW + actualSleeve * 0.3} y={shoulderY + actualSleeve * 0.15 - 22}
-            width="80" height="28" rx="4" fill="#1f1f1f" fillOpacity="0.85" />
-          <text x={cx + shoulderW + actualSleeve * 0.3 + 6} y={shoulderY + actualSleeve * 0.15 - 8}
-            fill="#f97316" fontSize="10" fontWeight="600">
-            Sleeve
-          </text>
-          <text x={cx + shoulderW + actualSleeve * 0.3 + 6} y={shoulderY + actualSleeve * 0.15 + 3}
-            fill="#f97316" fontSize="9">
-            {m.sleeve_length_cm} cm
-          </text>
+          <rect x={cx + shW + aSlv * 0.25} y={shY + aSlv * 0.12 - 24} width="72" height="26" rx="4" fill="#0d1117" fillOpacity="0.9" />
+          <text x={cx + shW + aSlv * 0.25 + 6} y={shY + aSlv * 0.12 - 11} fill="#f97316" fontSize="9" fontWeight="600">Sleeve</text>
+          <text x={cx + shW + aSlv * 0.25 + 6} y={shY + aSlv * 0.12 - 1} fill="#f97316" fontSize="10">{m.sleeve_length_cm} cm</text>
         </>
       )}
 
       {/* Neck */}
-      <rect x={cx - 40} y={topY - 42} width="80" height="22" rx="4" fill="#1f1f1f" fillOpacity="0.85" />
-      <text x={cx} y={topY - 26} textAnchor="middle" fill="#eab308" fontSize="10" fontWeight="600">
+      <rect x={cx - 38} y={topY - 42} width="76" height="20" rx="4" fill="#0d1117" fillOpacity="0.9" />
+      <text x={cx} y={topY - 27} textAnchor="middle" fill="#eab308" fontSize="10" fontWeight="600">
         Neck {m.neck_size_cm} cm
       </text>
-
-      {/* Arrow marker */}
-      <defs>
-        <marker id="arrowG" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
-          <path d="M0,0 L6,3 L0,6" fill="none" stroke="#22c55e" strokeWidth="1" />
-        </marker>
-      </defs>
     </g>
   );
 }
 
+/* ------------------------------------------------------------------ */
+/*  MAIN COMPONENT                                                     */
+/* ------------------------------------------------------------------ */
 export default function GarmentPreview3D({ measurements, style, gender }: GarmentPreview3DProps) {
   const n = useMemo(() => normalize(measurements), [measurements]);
   const styleName = style?.name || (gender === "female" ? "Blouse" : "Shirt");
@@ -508,27 +611,27 @@ export default function GarmentPreview3D({ measurements, style, gender }: Garmen
           <p className="text-[10px] text-gray-500">{styleName} — proportional to your measurements</p>
         </div>
         <div className="flex gap-1.5 items-center text-[9px] text-gray-500">
-          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500" />Shoulder</span>
-          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-500" />Chest</span>
-          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-purple-500" />Waist</span>
-          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-cyan-500" />Length</span>
-          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-orange-500" />Sleeve</span>
+          <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-green-500" />Shoulder</span>
+          <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-red-500" />Chest</span>
+          <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-purple-500" />Waist</span>
+          <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-cyan-500" />Length</span>
+          <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-orange-500" />Sleeve</span>
         </div>
       </div>
-      <svg viewBox="0 0 600 550" className="w-full" style={{ maxHeight: 450 }}>
-        {/* Background */}
-        <rect width="600" height="550" fill="#1a1a2e" rx="0" />
-        <rect x="50" y="30" width="500" height="490" fill="#16213e" rx="12" opacity="0.5" />
+      <svg viewBox="0 0 600 520" className="w-full" style={{ maxHeight: 480 }}>
+        <rect width="600" height="520" fill="#111827" />
+        {/* Subtle radial light */}
+        <radialGradient id="bglight" cx="50%" cy="40%" r="60%">
+          <stop offset="0%" stopColor="#1e293b" />
+          <stop offset="100%" stopColor="#111827" />
+        </radialGradient>
+        <rect width="600" height="520" fill="url(#bglight)" />
 
-        {/* Garment */}
-        {gender === "female" ? (
-          <FemaleBlouse m={measurements} n={n} style={style} />
-        ) : (
-          <MaleShirt m={measurements} n={n} style={style} />
-        )}
-
-        {/* Measurement annotations */}
-        <MeasurementAnnotations m={measurements} n={n} gender={gender} style={style} />
+        {gender === "female"
+          ? <FemaleBlouse n={n} style={style} />
+          : <MaleShirt n={n} style={style} />
+        }
+        <Annotations m={measurements} n={n} gender={gender} style={style} />
       </svg>
     </div>
   );

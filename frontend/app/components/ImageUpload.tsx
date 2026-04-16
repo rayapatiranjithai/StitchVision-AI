@@ -1,13 +1,16 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
+import { useToast } from "./Toast";
 
 interface ImageUploadProps {
   onImageSelected: (file: File) => void;
+  onPreviewReady?: (url: string | null) => void;
   disabled: boolean;
 }
 
-export default function ImageUpload({ onImageSelected, disabled }: ImageUploadProps) {
+export default function ImageUpload({ onImageSelected, onPreviewReady, disabled }: ImageUploadProps) {
+  const { showToast } = useToast();
   const [preview, setPreview] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -15,10 +18,12 @@ export default function ImageUpload({ onImageSelected, disabled }: ImageUploadPr
   const handleFile = useCallback(
     (file: File) => {
       if (!file.type.startsWith("image/")) {
-        alert("Please select an image file");
+        showToast("Please select an image file", "warning");
         return;
       }
-      setPreview(URL.createObjectURL(file));
+      const url = URL.createObjectURL(file);
+      setPreview(url);
+      onPreviewReady?.(url);
       onImageSelected(file);
     },
     [onImageSelected]
@@ -95,6 +100,7 @@ export default function ImageUpload({ onImageSelected, disabled }: ImageUploadPr
           onClick={(e) => {
             e.stopPropagation();
             setPreview(null);
+            onPreviewReady?.(null);
             if (inputRef.current) inputRef.current.value = "";
           }}
           className="text-sm text-gray-400 hover:text-white transition"

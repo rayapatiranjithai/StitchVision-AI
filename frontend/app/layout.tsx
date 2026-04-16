@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Body Measurement AI - Shirt Stitching Calculator",
-  description: "AI-powered body measurement estimation for custom shirt stitching using computer vision",
+  title: "StitchVision AI - AI Body Measurements for Custom Stitching",
+  description: "Upload a photo and get instant body measurements for custom shirt stitching with virtual try-on",
 };
 
 export default function RootLayout({
